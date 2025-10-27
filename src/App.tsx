@@ -1,35 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Prayers } from "./components/PrayerPill/constants";
+import { PrayerPill } from "./components/PrayerPill/PrayerPill";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="h-full w-full flex flex-col justify-center items-center">
+      <div className="flex flex-col gap-4">
+        <div className="grid sm:grid-cols-5 2xl:gap-8 xl:gap-6 lg:gap-4 md:gap-2 sm:gap-2">
+          {Object.values(Prayers).map((prayer) => (
+            <PrayerPill type={prayer} time={"05:07"} />
+          ))}
+        </div>
+        <button className="btn btn-link self-end 2xl:text-2xl">
+          Want to change your timezone?
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
