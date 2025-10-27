@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Prayers } from "./components/PrayerPill/constants";
 import { PrayerPill } from "./components/PrayerPill/PrayerPill";
-import { WorldMapDialog } from "./components/WorldMapDialog";
+import { WorldMapDialog } from "./components/Map/WorldMapDialog";
 
 function App() {
   const dialogRef = useRef<HTMLDialogElement>(null);

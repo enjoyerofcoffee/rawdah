@@ -11,10 +11,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
-    "i": "^0.3.7",
+    "cities.json": "^1.1.50",
+    "csv": "^6.4.1",
+    "d3-geo": "^3.1.1",
     "npm": "^11.6.2",
+    "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-simple-maps": "^3.0.0",
     "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
@@ -22,6 +26,7 @@
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/react-simple-maps": "^3.0.6",
     "@vitejs/plugin-react": "^5.0.4",
     "daisyui": "^5.3.10",
     "eslint": "^9.36.0",
