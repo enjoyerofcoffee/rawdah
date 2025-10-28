@@ -4,18 +4,26 @@ import {
   Geographies,
   Geography,
   ZoomableGroup,
+  Marker,
 } from "react-simple-maps";
-import { geoCentroid, geoPath } from "d3-geo";
+import {
+  geoCentroid,
+  geoPath,
+  type ExtendedFeature,
+  type GeoGeometryObjects,
+  type GeoPermissibleObjects,
+} from "d3-geo";
 
 import {
   buildCitiesByCountry,
   type CityRecord,
   type CitiesByCountry,
 } from "./utils";
+import { CityLabel } from "./CityLabel";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-export default function CountryZoomCityList({
+export default function WorldMap({
   onConfirm,
   onClose,
 }: {
@@ -25,28 +33,31 @@ export default function CountryZoomCityList({
   const [selectedCountryName, setSelectedCountryName] = useState<string | null>(
     null
   );
+
   const [selectedCity, setSelectedCity] = useState<CityRecord | null>(null);
+
+  const [hoverCity, setHoverCity] = useState<CityRecord | null>(null);
+
+  const [search, setSearch] = useState("");
 
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [mapZoom, setMapZoom] = useState<number>(1);
 
-  // parsed CSV data
   const [citiesByCountry, setCitiesByCountry] = useState<CitiesByCountry>({});
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [cityError, setCityError] = useState<string | null>(null);
 
-  // load + parse CSV once on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("public/worldcities.csv");
+        const res = await fetch("/worldcities.csv");
         const text = await res.text();
         if (cancelled) return;
         const map = buildCitiesByCountry(text);
         setCitiesByCountry(map);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load worldcities.csv", err);
       }
     })();
     return () => {
@@ -54,46 +65,47 @@ export default function CountryZoomCityList({
     };
   }, []);
 
-  // visibleCities pulls from parsed data
   const visibleCities = useMemo(() => {
     if (!selectedCountryName) return [];
     return citiesByCountry[selectedCountryName] || [];
   }, [selectedCountryName, citiesByCountry]);
 
-  function getZoomForFeature(feature: any) {
+  const filteredCities = useMemo(() => {
+    const lower = search.toLowerCase();
+    return visibleCities.filter((c) => c.name.toLowerCase().includes(lower));
+  }, [search, visibleCities]);
+
+  const getZoomForFeature = (feature: GeoPermissibleObjects) => {
     const pathGen = geoPath();
     const area = pathGen.area(feature);
     if (area > 4000) return 2.5;
     if (area > 1500) return 3.5;
     if (area > 500) return 4.5;
     return 6;
-  }
+  };
 
-  function handleResetWorld() {
+  const handleResetWorld = () => {
     setSelectedCountryName(null);
     setSelectedCity(null);
+    setHoverCity(null);
     setIsLoadingCities(false);
     setCityError(null);
     setMapCenter([0, 20]);
     setMapZoom(1);
-  }
+    setSearch("");
+  };
 
-  function handleCityClick(city: CityRecord) {
-    setSelectedCity(city);
-    // If you ever want to zoom to city:
-    // setMapCenter(city.coords);
-    // setMapZoom(8);
-  }
-
-  function confirmSelection() {
+  const confirmSelection = () => {
     if (!selectedCountryName || !selectedCity) return;
     onConfirm?.({
       countryName: selectedCountryName,
       city: selectedCity,
     });
-  }
+  };
 
-  async function handleCountryClick(geo: any) {
+  const handleCountryClick = async (
+    geo: ExtendedFeature<GeoGeometryObjects>
+  ) => {
     const countryName = geo.properties?.name as string | undefined;
     if (!countryName) return;
 
@@ -101,26 +113,32 @@ export default function CountryZoomCityList({
 
     setSelectedCountryName(countryName);
     setSelectedCity(null);
+    setHoverCity(null);
+    setSearch("");
 
     setMapCenter([lng, lat]);
     setMapZoom(getZoomForFeature(geo));
 
-    // "loading" UX while we settle
     setIsLoadingCities(true);
     setCityError(null);
 
-    Promise.resolve().then(() => {
-      const citiesForCountry = citiesByCountry[countryName] || [];
-      if (citiesForCountry.length === 0) {
-        setCityError("No cities found.");
-      }
-      setIsLoadingCities(false);
-    });
-  }
+    const citiesForCountry = citiesByCountry[countryName] || [];
+    if (citiesForCountry.length === 0) {
+      setCityError("No cities found.");
+    }
+    setIsLoadingCities(false);
+  };
+
+  const selectCity = (city: CityRecord) => {
+    setSelectedCity(city);
+    setHoverCity(null);
+
+    setMapCenter(city.coords);
+    setMapZoom(8);
+  };
 
   return (
-    <div className="flex flex-col w-full h-full bg-slate-900 text-slate-100">
-      {/* HEADER (top bar of the whole widget) */}
+    <div className="flex flex-col w-full h-full text-slate-100">
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex flex-col">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider">
@@ -155,7 +173,6 @@ export default function CountryZoomCityList({
         </div>
       </div>
 
-      {/* MAP AREA */}
       <div className="relative flex-1 min-h-0 min-w-0">
         <ComposableMap
           projection="geoMercator"
@@ -200,27 +217,53 @@ export default function CountryZoomCityList({
                 })
               }
             </Geographies>
+
+            {hoverCity && (
+              <Marker
+                key={hoverCity.name}
+                coordinates={hoverCity.coords}
+                onClick={() => setSelectedCity(hoverCity)}
+                style={{
+                  default: { cursor: "pointer" },
+                  hover: { cursor: "pointer" },
+                  pressed: { cursor: "pointer" },
+                }}
+              >
+                <circle r={0.5} fill={"#38bdf8"} strokeWidth={1} />
+                <CityLabel name={hoverCity.name} fill={"#f98501ff"} />
+              </Marker>
+            )}
+
+            {selectedCity && (
+              <Marker coordinates={selectedCity.coords}>
+                <circle r={0.5} fill="#FF875B" />
+                <CityLabel name={selectedCity.name} fill={"#f98501ff"} />
+              </Marker>
+            )}
           </ZoomableGroup>
         </ComposableMap>
 
-        {/* FLOATING PANEL */}
         <div className="absolute bottom-4 right-4 w-64 max-w-[80vw] max-h-[60vh] bg-slate-900/90 backdrop-blur rounded-xl border border-slate-700 p-4 text-sm shadow-xl flex flex-col">
-          {/* Case 1: nothing chosen yet */}
           {!selectedCountryName && (
             <div className="text-slate-400 text-sm">
               Click a country to zoom in 🌍
             </div>
           )}
 
-          {/* Case 2: country chosen, no city yet */}
           {selectedCountryName && !selectedCity && (
             <>
-              {/* Top, non-scrolling section */}
               <div className="flex-shrink-0 relative z-10">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
+                <div className="flex items-center text-[10px] justify-between text-slate-400 uppercase tracking-wider mb-2">
                   Cities in {selectedCountryName}
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={handleResetWorld}
+                  >
+                    Reset
+                  </button>
                 </div>
 
+                {/* search box */}
                 <label className="input flex items-center gap-2 mb-2">
                   <svg
                     className="h-[1em] opacity-50"
@@ -240,7 +283,8 @@ export default function CountryZoomCityList({
                   </svg>
                   <input
                     type="search"
-                    required
+                    onChange={(v) => setSearch(v.currentTarget.value)}
+                    value={search}
                     placeholder="Search"
                     className="bg-transparent outline-none w-full text-sm text-slate-100 placeholder:text-slate-500"
                   />
@@ -258,23 +302,24 @@ export default function CountryZoomCityList({
 
                 {!isLoadingCities &&
                   !cityError &&
-                  visibleCities.length === 0 && (
-                    <div className="text-slate-500 text-xs mb-2">
+                  filteredCities.length === 0 && (
+                    <div className="text-slate-500 text-xs my-4">
                       No cities found.
                     </div>
                   )}
               </div>
 
-              {/* Scrollable list area */}
               {!isLoadingCities && !cityError && visibleCities.length > 0 && (
                 <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
-                  {visibleCities.map((city) => (
+                  {filteredCities.map((city) => (
                     <li
                       key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
+                      onMouseEnter={() => setHoverCity(city)}
+                      onMouseLeave={() => setHoverCity(null)}
                     >
                       <button
                         className="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition text-slate-100"
-                        onClick={() => handleCityClick(city)}
+                        onClick={() => selectCity(city)}
                       >
                         <div className="text-sm font-medium">{city.name}</div>
                         <div className="text-[11px] text-slate-400">
@@ -289,7 +334,6 @@ export default function CountryZoomCityList({
             </>
           )}
 
-          {/* Case 3: city chosen */}
           {selectedCountryName && selectedCity && (
             <div className="flex flex-col flex-1 min-h-0">
               <div className="flex-shrink-0">
@@ -332,21 +376,6 @@ export default function CountryZoomCityList({
             </div>
           )}
         </div>
-      </div>
-
-      {/* FOOTER BAR (bottom of full widget) */}
-      <div className="p-4 border-t border-slate-700 flex justify-end gap-2">
-        <button className="btn btn-ghost btn-sm" onClick={handleResetWorld}>
-          Reset
-        </button>
-
-        <button
-          className="btn btn-primary btn-sm"
-          disabled={!selectedCity}
-          onClick={confirmSelection}
-        >
-          {selectedCity ? `Confirm ${selectedCity.name}` : "Select a city"}
-        </button>
       </div>
     </div>
   );

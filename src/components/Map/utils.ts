@@ -1,5 +1,3 @@
-// utils/buildCitiesByCountry.ts
-
 export type CityRecord = {
   name: string;
   coords: [number, number]; // [lng, lat]
@@ -34,7 +32,6 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
 
     if (lines.length === 0) return [];
 
-    // parse header
     const header = splitCSVLine(lines[0]);
     const rows: Record<string, string>[] = [];
 
@@ -42,7 +39,6 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
       const rawLine = lines[i];
       const cols = splitCSVLine(rawLine);
 
-      // skip if row is shorter than header (often trailing newline)
       if (cols.length === 1 && cols[0].trim() === "") continue;
 
       const row: Record<string, string> = {};
@@ -65,10 +61,9 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
 
       if (inQuotes) {
         if (ch === `"`) {
-          // lookahead for escaped quote
           if (line[i + 1] === `"`) {
-            cur += `"`; // add a literal quote
-            i++; // skip next
+            cur += `"`;
+            i++;
           } else {
             inQuotes = false;
           }
@@ -90,10 +85,8 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
     return result;
   }
 
-  // step 1: parse CSV into objects
   const rawRows = parseCSV(csvText);
 
-  // step 2: accumulate into map
   const map: Record<
     string,
     { name: string; coords: [number, number]; population: number }[]
@@ -101,9 +94,7 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
 
   for (const row of rawRows) {
     const country = row["country"]?.trim();
-    const cityName =
-      // prefer "city" (original case) but fall back to "city_ascii" if you want ascii only.
-      (row["city"] ?? row["city_ascii"] ?? "").trim();
+    const cityName = (row["city"] ?? row["city_ascii"] ?? "").trim();
 
     const latStr = row["lat"];
     const lngStr = row["lng"];
@@ -131,18 +122,14 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
     });
   }
 
-  // step 3: sort each country's list by population desc, then name asc,
-  // and strip population from final shape.
   const finalMap: CitiesByCountry = {};
 
   for (const countryName of Object.keys(map)) {
     const sorted = map[countryName]
       .sort((a, b) => {
-        // primary: bigger population first
         if (b.population !== a.population) {
           return b.population - a.population;
         }
-        // fallback stable order: alphabetical
         return a.name.localeCompare(b.name);
       })
       .map((c) => ({
