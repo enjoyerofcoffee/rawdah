@@ -23,7 +23,7 @@ import {
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const DEFAULT_MAP_CENTER: [number, number] = [0, 100];
-const DEFAULT_ZOOM = 8;
+const DEFAULT_ZOOM = 4;
 
 type Selection = {
   country?: string;
@@ -67,15 +67,15 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
   const getZoomForFeature = (feature: GeoPermissibleObjects) => {
     const pathGen = geoPath();
     const area = pathGen.area(feature);
-    if (area > 4000) return 2.5;
-    if (area > 1500) return 3.5;
-    if (area > 500) return 4.5;
-    return 6;
+    if (area > 4000) return 0.5;
+    if (area > 1500) return 1.5;
+    if (area > 500) return 2.5;
+    return DEFAULT_ZOOM;
   };
 
   const handleResetWorld = () => {
     setSelection({ city: undefined, country: undefined });
-    setMapControls({ center: DEFAULT_MAP_CENTER, zoom: 1 });
+    setMapControls({ center: DEFAULT_MAP_CENTER, zoom: DEFAULT_ZOOM });
     setHoverCity(undefined);
     setSearch(undefined);
   };
@@ -95,7 +95,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
     const [lng, lat] = geoCentroid(geo);
 
     setSelection({ country: countryName, city: undefined });
-    setMapControls({ center: [lng, lat], zoom: getZoomForFeature(geo) });
+    setMapControls({
+      center: [lng, lat],
+      zoom: getZoomForFeature(geo),
+    });
     setHoverCity(undefined);
     setSearch(undefined);
   };
@@ -106,8 +109,11 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
     setHoverCity(undefined);
   };
 
+  console.log(mapControls.zoom);
+
+  /* Some countries may have empty cities */
   const visibleCities = selected.country
-    ? citiesByCountry.current[selected.country]
+    ? citiesByCountry.current[selected.country] || []
     : [];
 
   const filteredCities = visibleCities.filter((c) =>
@@ -169,7 +175,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
 
             {hoverCity && (
               <Marker coordinates={hoverCity.coords}>
-                <circle r={0.5} fill={"#009bdeff"} strokeWidth={1} />
+                <circle r={0.5} fill={"#FF875B"} strokeWidth={1} />
               </Marker>
             )}
 
