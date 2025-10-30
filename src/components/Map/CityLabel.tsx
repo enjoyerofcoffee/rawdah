@@ -1,24 +1,13 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 
 type CityLabelProps = {
   name: string;
-  fill: string;
 };
 export const CityLabel: React.FC<CityLabelProps> = ({ name }) => {
-  const [textWidth, setTextWidth] = useState<number>(0);
-  const textRef = useRef<SVGTextElement | null>(null);
-
-  // measure text once it's rendered
-  React.useEffect(() => {
-    if (textRef.current) {
-      const w = textRef.current.getComputedTextLength();
-      setTextWidth(w);
-    }
-  }, [name]);
-
   const paddingX = 2;
-  const boxW = textWidth + paddingX * 2;
-  const boxH = 10; // tweak
+  console.log(name);
+  const boxW = name.length + 10;
+  const boxH = 12;
 
   return (
     <g transform="translate(3, -2)">
@@ -35,7 +24,6 @@ export const CityLabel: React.FC<CityLabelProps> = ({ name }) => {
 
       {/* actual text */}
       <text
-        ref={textRef}
         x={paddingX}
         y={boxH / 2 + 1.2} // vertical centering fudge
         style={{

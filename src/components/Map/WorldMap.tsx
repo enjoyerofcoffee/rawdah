@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -19,26 +19,37 @@ import {
   type CityRecord,
   type CitiesByCountry,
 } from "./utils";
-import { CityLabel } from "./CityLabel";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-export default function WorldMap({
-  onConfirm,
-  onClose,
-}: {
+const DEFAULT_MAP_CENTER: [number, number] = [0, 100];
+const DEFAULT_ZOOM = 8;
+
+type Selection = {
+  country?: string;
+  city?: CityRecord;
+};
+
+type MapControls = {
+  center: [number, number];
+  zoom: number;
+};
+
+type WorldMapProps = {
   onConfirm?: (payload: { countryName: string; city: CityRecord }) => void;
-  onClose?: () => void;
-}) {
-  const [selectedCountryName, setSelectedCountryName] = useState<string | null>(
-    null
-  );
-  const [selectedCity, setSelectedCity] = useState<CityRecord | null>(null);
-  const [hoverCity, setHoverCity] = useState<CityRecord | null>(null);
-  const [search, setSearch] = useState("");
-  const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
-  const [mapZoom, setMapZoom] = useState<number>(1);
-  const [citiesByCountry, setCitiesByCountry] = useState<CitiesByCountry>({});
+};
+export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
+  const [selected, setSelection] = useState<Selection>({
+    city: undefined,
+    country: undefined,
+  });
+  const [mapControls, setMapControls] = useState<MapControls>({
+    center: DEFAULT_MAP_CENTER,
+    zoom: DEFAULT_ZOOM,
+  });
+  const [hoverCity, setHoverCity] = useState<CityRecord>();
+  const [search, setSearch] = useState<string>();
+  const citiesByCountry = useRef<CitiesByCountry>({});
 
   useEffect(() => {
     (async () => {
@@ -46,23 +57,12 @@ export default function WorldMap({
         const res = await fetch("/worldcities.csv");
         const text = await res.text();
 
-        const map = buildCitiesByCountry(text);
-        setCitiesByCountry(map);
+        citiesByCountry.current = buildCitiesByCountry(text);
       } catch (err) {
         console.error("Failed to load worldcities.csv", err);
       }
     })();
   }, []);
-
-  const visibleCities = useMemo(() => {
-    if (!selectedCountryName) return [];
-    return citiesByCountry[selectedCountryName] || [];
-  }, [selectedCountryName, citiesByCountry]);
-
-  const filteredCities = useMemo(() => {
-    const lower = search.toLowerCase();
-    return visibleCities.filter((c) => c.name.toLowerCase().includes(lower));
-  }, [search, visibleCities]);
 
   const getZoomForFeature = (feature: GeoPermissibleObjects) => {
     const pathGen = geoPath();
@@ -74,19 +74,17 @@ export default function WorldMap({
   };
 
   const handleResetWorld = () => {
-    setSelectedCountryName(null);
-    setSelectedCity(null);
-    setHoverCity(null);
-    setMapCenter([0, 20]);
-    setMapZoom(1);
-    setSearch("");
+    setSelection({ city: undefined, country: undefined });
+    setMapControls({ center: DEFAULT_MAP_CENTER, zoom: 1 });
+    setHoverCity(undefined);
+    setSearch(undefined);
   };
 
   const confirmSelection = () => {
-    if (!selectedCountryName || !selectedCity) return;
+    if (!selected.country || !selected.city) return;
     onConfirm?.({
-      countryName: selectedCountryName,
-      city: selectedCity,
+      countryName: selected.country,
+      city: selected.city,
     });
   };
 
@@ -94,51 +92,51 @@ export default function WorldMap({
     geo: ExtendedFeature<GeoGeometryObjects>
   ) => {
     const countryName = geo.properties?.name as string | undefined;
-    if (!countryName) return;
-
     const [lng, lat] = geoCentroid(geo);
 
-    setSelectedCountryName(countryName);
-    setSelectedCity(null);
-    setHoverCity(null);
-    setSearch("");
-
-    setMapCenter([lng, lat]);
-    setMapZoom(getZoomForFeature(geo));
+    setSelection({ country: countryName, city: undefined });
+    setMapControls({ center: [lng, lat], zoom: getZoomForFeature(geo) });
+    setHoverCity(undefined);
+    setSearch(undefined);
   };
 
   const selectCity = (city: CityRecord) => {
-    setSelectedCity(city);
-    setHoverCity(null);
-
-    setMapCenter(city.coords);
-    setMapZoom(8);
+    setSelection((prev) => ({ ...prev, city }));
+    setMapControls({ center: city.coords, zoom: DEFAULT_ZOOM });
+    setHoverCity(undefined);
   };
 
+  const visibleCities = selected.country
+    ? citiesByCountry.current[selected.country]
+    : [];
+
+  const filteredCities = visibleCities.filter((c) =>
+    c.name.toLowerCase().includes(search?.toLowerCase() || "")
+  );
+
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col">
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex flex-col">
           <div className="text-xs uppercase tracking-wider">
-            {selectedCountryName ? "Select a city" : "Select a country"}
+            {selected.country ? "Select a city" : "Select a country"}
           </div>
-
           <div className="text-sm font-medium text-slate-100">
-            {selectedCity
-              ? `${selectedCity.name}, ${selectedCountryName ?? ""}`
-              : selectedCountryName || "World"}
+            {selected.city
+              ? `${selected.city.name}, ${selected.country ?? ""}`
+              : selected.country || "World"}
           </div>
         </div>
       </div>
 
-      <div className="relative h-full">
-        <ComposableMap projection="geoMercator" className="h-full w-full">
-          <ZoomableGroup center={mapCenter} zoom={mapZoom}>
+      <div className="h-screen w-screen">
+        <ComposableMap projection="geoMercator">
+          <ZoomableGroup center={mapControls?.center} zoom={mapControls?.zoom}>
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => {
                   const name = geo.properties?.name;
-                  const isSelected = !!name && name === selectedCountryName;
+                  const isSelected = !!name && name === selected.country;
 
                   return (
                     <Geography
@@ -170,42 +168,31 @@ export default function WorldMap({
             </Geographies>
 
             {hoverCity && (
-              <Marker
-                key={hoverCity.name}
-                coordinates={hoverCity.coords}
-                onClick={() => setSelectedCity(hoverCity)}
-                style={{
-                  default: { cursor: "pointer" },
-                  hover: { cursor: "pointer" },
-                  pressed: { cursor: "pointer" },
-                }}
-              >
-                <circle r={0.5} fill={"#38bdf8"} strokeWidth={1} />
-                <CityLabel name={hoverCity.name} fill={"#f98501ff"} />
+              <Marker coordinates={hoverCity.coords}>
+                <circle r={0.5} fill={"#009bdeff"} strokeWidth={1} />
               </Marker>
             )}
 
-            {selectedCity && (
-              <Marker coordinates={selectedCity.coords}>
+            {selected.city && (
+              <Marker coordinates={selected.city.coords}>
                 <circle r={0.5} fill="#FF875B" />
-                <CityLabel name={selectedCity.name} fill={"#f98501ff"} />
               </Marker>
             )}
           </ZoomableGroup>
         </ComposableMap>
 
         <div className="absolute bottom-4 right-4 w-64 max-w-[80vw] max-h-[60vh] bg-slate-900/90 backdrop-blur rounded-xl border border-slate-700 p-4 text-sm shadow-xl flex flex-col">
-          {!selectedCountryName && (
+          {!selected.country && (
             <div className="text-slate-400 text-sm">
               Click a country to zoom in 🌍
             </div>
           )}
 
-          {selectedCountryName && !selectedCity && (
+          {selected.country && !selected.city && (
             <>
               <div className="flex-shrink-0 relative z-10">
                 <div className="flex items-center text-[10px] justify-between text-slate-400 uppercase tracking-wider mb-2">
-                  Cities in {selectedCountryName}
+                  Cities in {selected.country}
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={handleResetWorld}
@@ -213,7 +200,6 @@ export default function WorldMap({
                     Reset
                   </button>
                 </div>
-
                 <label className="input flex items-center gap-2 mb-2">
                   <svg
                     className="h-[1em] opacity-50"
@@ -252,7 +238,7 @@ export default function WorldMap({
                   <li
                     key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
                     onMouseEnter={() => setHoverCity(city)}
-                    onMouseLeave={() => setHoverCity(null)}
+                    onMouseLeave={() => setHoverCity(undefined)}
                   >
                     <button
                       className="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition text-slate-100"
@@ -270,41 +256,39 @@ export default function WorldMap({
             </>
           )}
 
-          {selectedCountryName && selectedCity && (
-            <div className="flex flex-col flex-1 min-h-0">
-              <div className="flex-shrink-0">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">
-                  Selected city
-                </div>
-
-                <div className="text-lg font-semibold text-slate-100">
-                  {selectedCity.name}
-                </div>
-
-                <div className="text-slate-400 text-xs mb-4">
-                  {selectedCountryName}
-                </div>
-
-                <div className="text-xs text-slate-500 leading-relaxed mb-4">
-                  Lon/Lat:{" "}
-                  <span className="text-slate-200">
-                    {selectedCity.coords[0].toFixed(2)},{" "}
-                    {selectedCity.coords[1].toFixed(2)}
-                  </span>
-                </div>
+          {selected.country && selected.city && (
+            <div className="flex flex-col flex-1">
+              <div className="text-xs uppercase tracking-wider mb-2">
+                Selected city
               </div>
 
-              <div className="mt-auto flex-shrink-0 space-y-2">
+              <div className="text-lg font-semibold text-slate-100">
+                {selected.city.name}
+              </div>
+
+              <div className="text-xs mb-4">{selected.country}</div>
+
+              <div className="text-xs leading-relaxed mb-4">
+                Lon/Lat:{" "}
+                <span>
+                  {selected.city.coords[0].toFixed(2)},{" "}
+                  {selected.city.coords[1].toFixed(2)}
+                </span>
+              </div>
+
+              <div className="space-y-2">
                 <button
                   className="btn btn-primary btn-sm w-full"
                   onClick={confirmSelection}
                 >
-                  Use {selectedCity.name}
+                  Use {selected.city.name}
                 </button>
 
                 <button
-                  className="btn btn-ghost btn-sm w-full text-slate-400"
-                  onClick={() => setSelectedCity(null)}
+                  className="btn btn-ghost btn-sm w-full"
+                  onClick={() =>
+                    setSelection((prev) => ({ ...prev, city: undefined }))
+                  }
                 >
                   Pick different city
                 </button>
@@ -315,4 +299,4 @@ export default function WorldMap({
       </div>
     </div>
   );
-}
+};

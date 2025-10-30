@@ -1,4 +1,4 @@
-import WorldMap from "./WorldMap";
+import { WorldMap } from "./WorldMap";
 
 type WorldMapDialogProps = {
   ref: React.RefObject<HTMLDialogElement | null>;
