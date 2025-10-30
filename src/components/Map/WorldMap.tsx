@@ -33,36 +33,25 @@ export default function WorldMap({
   const [selectedCountryName, setSelectedCountryName] = useState<string | null>(
     null
   );
-
   const [selectedCity, setSelectedCity] = useState<CityRecord | null>(null);
-
   const [hoverCity, setHoverCity] = useState<CityRecord | null>(null);
-
   const [search, setSearch] = useState("");
-
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [mapZoom, setMapZoom] = useState<number>(1);
-
   const [citiesByCountry, setCitiesByCountry] = useState<CitiesByCountry>({});
-  const [isLoadingCities, setIsLoadingCities] = useState(false);
-  const [cityError, setCityError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/worldcities.csv");
         const text = await res.text();
-        if (cancelled) return;
+
         const map = buildCitiesByCountry(text);
         setCitiesByCountry(map);
       } catch (err) {
         console.error("Failed to load worldcities.csv", err);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const visibleCities = useMemo(() => {
@@ -88,8 +77,6 @@ export default function WorldMap({
     setSelectedCountryName(null);
     setSelectedCity(null);
     setHoverCity(null);
-    setIsLoadingCities(false);
-    setCityError(null);
     setMapCenter([0, 20]);
     setMapZoom(1);
     setSearch("");
@@ -118,15 +105,6 @@ export default function WorldMap({
 
     setMapCenter([lng, lat]);
     setMapZoom(getZoomForFeature(geo));
-
-    setIsLoadingCities(true);
-    setCityError(null);
-
-    const citiesForCountry = citiesByCountry[countryName] || [];
-    if (citiesForCountry.length === 0) {
-      setCityError("No cities found.");
-    }
-    setIsLoadingCities(false);
   };
 
   const selectCity = (city: CityRecord) => {
@@ -138,10 +116,10 @@ export default function WorldMap({
   };
 
   return (
-    <div className="flex flex-col w-full h-full text-slate-100">
+    <div className="flex flex-col w-full h-full">
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex flex-col">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+          <div className="text-xs uppercase tracking-wider">
             {selectedCountryName ? "Select a city" : "Select a country"}
           </div>
 
@@ -151,37 +129,10 @@ export default function WorldMap({
               : selectedCountryName || "World"}
           </div>
         </div>
-
-        <div className="flex gap-2">
-          {selectedCountryName && (
-            <button
-              className="btn btn-xs btn-ghost text-slate-400"
-              onClick={handleResetWorld}
-            >
-              ← World
-            </button>
-          )}
-
-          {onClose && (
-            <button
-              className="btn btn-xs btn-circle btn-ghost text-slate-500"
-              onClick={onClose}
-            >
-              ✕
-            </button>
-          )}
-        </div>
       </div>
 
-      <div className="relative flex-1 min-h-0 min-w-0">
-        <ComposableMap
-          projection="geoMercator"
-          style={{
-            width: "100%",
-            height: "100%",
-            backgroundColor: "#0f172a",
-          }}
-        >
+      <div className="relative h-full">
+        <ComposableMap projection="geoMercator" className="h-full w-full">
           <ZoomableGroup center={mapCenter} zoom={mapZoom}>
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
@@ -263,7 +214,6 @@ export default function WorldMap({
                   </button>
                 </div>
 
-                {/* search box */}
                 <label className="input flex items-center gap-2 mb-2">
                   <svg
                     className="h-[1em] opacity-50"
@@ -289,48 +239,34 @@ export default function WorldMap({
                     className="bg-transparent outline-none w-full text-sm text-slate-100 placeholder:text-slate-500"
                   />
                 </label>
-
-                {isLoadingCities && (
-                  <div className="text-slate-400 text-xs mb-2">
-                    Loading cities…
-                  </div>
-                )}
-
-                {!isLoadingCities && cityError && (
-                  <div className="text-red-400 text-xs mb-2">{cityError}</div>
-                )}
-
-                {!isLoadingCities &&
-                  !cityError &&
-                  filteredCities.length === 0 && (
-                    <div className="text-slate-500 text-xs my-4">
-                      No cities found.
-                    </div>
-                  )}
               </div>
 
-              {!isLoadingCities && !cityError && visibleCities.length > 0 && (
-                <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
-                  {filteredCities.map((city) => (
-                    <li
-                      key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
-                      onMouseEnter={() => setHoverCity(city)}
-                      onMouseLeave={() => setHoverCity(null)}
-                    >
-                      <button
-                        className="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition text-slate-100"
-                        onClick={() => selectCity(city)}
-                      >
-                        <div className="text-sm font-medium">{city.name}</div>
-                        <div className="text-[11px] text-slate-400">
-                          lon {city.coords[0].toFixed(2)}, lat{" "}
-                          {city.coords[1].toFixed(2)}
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+              {filteredCities.length === 0 && (
+                <div className="text-slate-500 text-xs my-4">
+                  No cities found.
+                </div>
               )}
+
+              <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
+                {filteredCities.map((city) => (
+                  <li
+                    key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
+                    onMouseEnter={() => setHoverCity(city)}
+                    onMouseLeave={() => setHoverCity(null)}
+                  >
+                    <button
+                      className="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition text-slate-100"
+                      onClick={() => selectCity(city)}
+                    >
+                      <div className="text-sm font-medium">{city.name}</div>
+                      <div className="text-[11px] text-slate-400">
+                        lon {city.coords[0].toFixed(2)}, lat{" "}
+                        {city.coords[1].toFixed(2)}
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </>
           )}
 

@@ -4,10 +4,7 @@ type CityLabelProps = {
   name: string;
   fill: string;
 };
-export const CityLabel: React.FC<CityLabelProps> = ({
-  name,
-  fill = "#38bdf8",
-}) => {
+export const CityLabel: React.FC<CityLabelProps> = ({ name }) => {
   const [textWidth, setTextWidth] = useState<number>(0);
   const textRef = useRef<SVGTextElement | null>(null);
 
