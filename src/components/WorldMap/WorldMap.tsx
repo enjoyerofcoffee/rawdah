@@ -178,7 +178,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
           </ZoomableGroup>
         </ComposableMap>
 
-        <div className="flex flex-col w-full max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm sm:absolute sm:top-24 md:right-4 md:w-64 md:bg-slate-900/90  md:border border-slate-700 md:shadow-xl">
+        <div className="flex flex-col max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm md:absolute md:top-24 md:right-4 md:w-64 md:bg-slate-900/90 md:border border-slate-700 md:shadow-xl">
           {!selected.country && (
             <div className="text-slate-400 text-sm">
               Click a country to zoom in 🌍
