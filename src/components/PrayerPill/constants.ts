@@ -1,5 +1,6 @@
 export const Prayers = {
   Fajr: "Fajr",
+  Sunrise: "Sunrise",
   Dhur: "Dhuhr",
   Asr: "Asr",
   Maghrib: "Maghrib",

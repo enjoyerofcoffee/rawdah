@@ -2,9 +2,10 @@ import { Prayers, type PrayerType } from "./constants";
 
 const PrayerIconsMap = {
   [Prayers.Fajr]: "🌄",
+  [Prayers.Sunrise]: "🌅",
   [Prayers.Dhur]: "🌤️",
   [Prayers.Asr]: "⛅️",
-  [Prayers.Maghrib]: "🌅",
+  [Prayers.Maghrib]: "🌇",
   [Prayers.Isha]: "🌙",
 };
 
