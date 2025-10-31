@@ -14,11 +14,7 @@ import {
   type GeoPermissibleObjects,
 } from "d3-geo";
 
-import {
-  buildCitiesByCountry,
-  type CityRecord,
-  type CitiesByCountry,
-} from "./utils";
+import { type CityRecord, type CitiesByCountry, loadCityData } from "./utils";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -49,15 +45,12 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
   });
   const [hoverCity, setHoverCity] = useState<CityRecord>();
   const [search, setSearch] = useState<string>();
-  const citiesByCountry = useRef<CitiesByCountry>({});
+  const citiesByCountryRef = useRef<CitiesByCountry>({});
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/worldcities.csv");
-        const text = await res.text();
-
-        citiesByCountry.current = buildCitiesByCountry(text);
+        citiesByCountryRef.current = await loadCityData();
       } catch (err) {
         console.error("Failed to load worldcities.csv", err);
       }
@@ -109,11 +102,9 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
     setHoverCity(undefined);
   };
 
-  console.log(mapControls.zoom);
-
   /* Some countries may have empty cities */
   const visibleCities = selected.country
-    ? citiesByCountry.current[selected.country] || []
+    ? citiesByCountryRef.current[selected.country] || []
     : [];
 
   const filteredCities = visibleCities.filter((c) =>
@@ -135,7 +126,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
         </div>
       </div>
 
-      <div className="h-screen w-screen">
+      <div className="h-full w-full">
         <ComposableMap projection="geoMercator">
           <ZoomableGroup center={mapControls?.center} zoom={mapControls?.zoom}>
             <Geographies geography={geoUrl}>
@@ -187,7 +178,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
           </ZoomableGroup>
         </ComposableMap>
 
-        <div className="absolute bottom-4 right-4 w-64 max-w-[80vw] max-h-[60vh] bg-slate-900/90 backdrop-blur rounded-xl border border-slate-700 p-4 text-sm shadow-xl flex flex-col">
+        <div className="flex flex-col w-full max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm sm:absolute sm:top-24 md:right-4 md:w-64 md:bg-slate-900/90  md:border border-slate-700 md:shadow-xl">
           {!selected.country && (
             <div className="text-slate-400 text-sm">
               Click a country to zoom in 🌍

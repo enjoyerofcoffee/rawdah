@@ -142,3 +142,15 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
 
   return finalMap;
 }
+
+export const loadCityData = async () => {
+  try {
+    const res = await fetch("/worldcities.csv");
+    const text = await res.text();
+
+    return buildCitiesByCountry(text);
+  } catch (err) {
+    console.error("Failed to load worldcities.csv", err);
+    return {} as CitiesByCountry;
+  }
+};
