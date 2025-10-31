@@ -17,6 +17,7 @@ import type { CitiesByCountry, CityRecord } from "./types";
 import { loadCityData } from "./utils";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useToast } from "../../hooks/useToast";
+import { Virtuoso } from "react-virtuoso";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -106,7 +107,6 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
     setHoverCity(undefined);
   };
 
-  /* Some countries may have empty cities */
   const visibleCities = selected.country
     ? citiesByCountryRef.current[selected.country] || []
     : [];
@@ -236,7 +236,28 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                 </div>
               )}
 
-              <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
+              <Virtuoso
+                style={{ height: 420 }}
+                data={filteredCities}
+                totalCount={filteredCities.length}
+                itemContent={(_, city) => (
+                  <>
+                    <div
+                      className="w-full text-left p-2 rounded-lg hover:bg-slate-700 transition text-slate-100 mt-2"
+                      onClick={() => selectCity(city)}
+                    >
+                      <div className="text-sm font-medium">{city.name}</div>
+                      <div className="text-sm text-slate-400">
+                        lon {city.coords[0].toFixed(2)}, lat{" "}
+                        {city.coords[1].toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="divider m-0 p-0" />
+                  </>
+                )}
+              />
+
+              {/* <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
                 {filteredCities.map((city) => (
                   <li
                     key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
@@ -255,7 +276,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                     </button>
                   </li>
                 ))}
-              </ul>
+              </ul> */}
             </>
           )}
 
