@@ -1,17 +1,17 @@
-import { Suspense, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Prayers } from "./components/PrayerPill/constants";
 import { PrayerPill } from "./components/PrayerPill/PrayerPill";
 import { WorldMapDialog } from "./components/WorldMap/WorldMapDialog";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
-import { useLocalStorage } from "./hooks/useLocalStorage";
-import type { LocationStorage } from "./hooks/types";
+import type { Location } from "./hooks/types";
 import type { PrayerTimesResponse } from "./types";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
-const fetchPrayerTimes = async (location: LocationStorage | null) => {
+const fetchPrayerTimes = async (location?: Location) => {
   if (!location) {
-    return;
+    return null;
   }
 
   const todayDate = format(new Date(), "dd-MM-yyyy");
@@ -35,14 +35,30 @@ const fetchPrayerTimes = async (location: LocationStorage | null) => {
 
 function App() {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [location, setLocation] = useState<Location>();
   const { getLocation } = useLocalStorage();
 
-  const location = getLocation();
-
   const { isLoading, data } = useQuery({
-    queryKey: ["prayertimes"],
+    queryKey: ["prayertimes", location?.city, location?.country],
     queryFn: () => fetchPrayerTimes(location),
   });
+
+  useEffect(() => {
+    const locationStorage = getLocation();
+    if (locationStorage) {
+      setLocation(locationStorage);
+    }
+
+    window.addEventListener("storage", () => {
+      const location = getLocation();
+      console.log("fired!!");
+      if (location) {
+        setLocation(location);
+      }
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openModal = () => dialogRef.current?.showModal();
 
@@ -60,12 +76,18 @@ function App() {
             />
           ))}
         </div>
-        <button
-          className="btn btn-link self-end 2xl:text-2xl"
-          onClick={openModal}
-        >
-          Want to change your timezone?
-        </button>
+        <div className="flex items-center justify-between">
+          <p>
+            <span className="font-bold">{location?.city.name}</span>,{" "}
+            {location?.country}
+          </p>
+          <button
+            className="btn btn-link self-end 2xl:text-2xl"
+            onClick={openModal}
+          >
+            Want to change your timezone?
+          </button>
+        </div>
         <div className="bg-gray-700 h-12 rounded-2xl"></div>
       </div>
     </div>

@@ -1,19 +1,18 @@
 import { LocalStorageKeys } from "./constants";
-import type { LocationStorage } from "./types";
+import type { Location } from "./types";
 
 export const useLocalStorage = () => {
-  const setLocation = (locationStorage: LocationStorage) => {
+  const setLocation = (locationStorage: Location) => {
     localStorage.setItem(
       LocalStorageKeys.Location,
       JSON.stringify(locationStorage)
     );
+    window.dispatchEvent(new Event("storage"));
   };
 
-  const getLocation = (): LocationStorage | null => {
+  const getLocation = (): Location | null => {
     const locationStorage = localStorage.getItem(LocalStorageKeys.Location);
-    return locationStorage
-      ? (JSON.parse(locationStorage) as LocationStorage)
-      : null;
+    return locationStorage ? (JSON.parse(locationStorage) as Location) : null;
   };
 
   return { setLocation, getLocation };

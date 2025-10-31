@@ -1,6 +1,6 @@
 import type { CityRecord } from "../components/WorldMap/types";
 
-export type LocationStorage = {
+export type Location = {
   city: CityRecord;
   country: string;
 };
