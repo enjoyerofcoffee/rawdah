@@ -78,15 +78,17 @@ function App() {
           ))}
         </div>
         <div className="flex items-center justify-between">
-          <p>
-            <span className="font-bold">{location?.city.name}</span>{" "}
-            {location?.country}
-          </p>
+          {location && (
+            <p>
+              <span className="font-bold">{location?.city.name}, </span>
+              {location?.country}
+            </p>
+          )}
           <button
             className="btn btn-link self-end 2xl:text-2xl"
             onClick={openModal}
           >
-            Want to change your timezone?
+            {location ? "Want to change your timezone?" : "Select location"}
           </button>
         </div>
         <NightCalculations fajr={data?.Fajr} maghrib={data?.Maghrib} />
