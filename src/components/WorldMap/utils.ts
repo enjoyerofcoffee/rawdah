@@ -1,32 +1,6 @@
-export type CityRecord = {
-  name: string;
-  coords: [number, number]; // [lng, lat]
-};
+import type { CitiesByCountry } from "./types";
 
-export type CitiesByCountry = Record<string, CityRecord[]>;
-
-/**
- * Given CSV text from worldcities.csv, return { [countryName]: CityRecord[] }
- *
- * Notes about expected columns in worldcities.csv:
- * - city          string  (e.g. "Tokyo")
- * - country       string  (e.g. "Japan")
- * - lat           number  (e.g. 35.6870)
- * - lng           number  (e.g. 139.7495)
- * - population    number  (may be empty)
- *
- * We'll:
- *  - skip rows missing required fields
- *  - coerce lat/lng/population to numbers
- *  - group by country
- *  - sort each country's list by population (desc), then by city name
- */
 export function buildCitiesByCountry(csvText: string): CitiesByCountry {
-  // naive CSV parsing that can still handle quoted values with commas
-  // We'll do a small state machine instead of split(',') to stay safe.
-  // But since worldcities.csv is well-behaved, you *could* use a simpler split.
-  // This version aims to be robust without needing a library.
-
   function parseCSV(text: string): Record<string, string>[] {
     const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
 
@@ -51,7 +25,7 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
     return rows;
   }
 
-  function splitCSVLine(line: string): string[] {
+  const splitCSVLine = (line: string): string[] => {
     const result: string[] = [];
     let cur = "";
     let inQuotes = false;
@@ -83,7 +57,7 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
     }
     result.push(cur);
     return result;
-  }
+  };
 
   const rawRows = parseCSV(csvText);
 
@@ -125,19 +99,12 @@ export function buildCitiesByCountry(csvText: string): CitiesByCountry {
   const finalMap: CitiesByCountry = {};
 
   for (const countryName of Object.keys(map)) {
-    const sorted = map[countryName]
-      .sort((a, b) => {
-        if (b.population !== a.population) {
-          return b.population - a.population;
-        }
-        return a.name.localeCompare(b.name);
-      })
-      .map((c) => ({
-        name: c.name,
-        coords: c.coords,
-      }));
+    const data = map[countryName].map((c) => ({
+      name: c.name,
+      coords: c.coords,
+    }));
 
-    finalMap[countryName] = sorted;
+    finalMap[countryName] = data;
   }
 
   return finalMap;

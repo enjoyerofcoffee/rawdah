@@ -13,8 +13,10 @@ import {
   type GeoGeometryObjects,
   type GeoPermissibleObjects,
 } from "d3-geo";
-
-import { type CityRecord, type CitiesByCountry, loadCityData } from "./utils";
+import type { CitiesByCountry, CityRecord } from "./types";
+import { loadCityData } from "./utils";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useToast } from "../../hooks/useToast";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -32,9 +34,9 @@ type MapControls = {
 };
 
 type WorldMapProps = {
-  onConfirm?: (payload: { countryName: string; city: CityRecord }) => void;
+  ref: React.RefObject<HTMLDialogElement | null>;
 };
-export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
+export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
   const [selected, setSelection] = useState<Selection>({
     city: undefined,
     country: undefined,
@@ -46,6 +48,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
   const [hoverCity, setHoverCity] = useState<CityRecord>();
   const [search, setSearch] = useState<string>();
   const citiesByCountryRef = useRef<CitiesByCountry>({});
+  const { setLocation } = useLocalStorage();
+  const { ToastHolder, sendMessage } = useToast();
 
   useEffect(() => {
     (async () => {
@@ -61,9 +65,9 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
     const pathGen = geoPath();
     const area = pathGen.area(feature);
     if (area > 4000) return 0.5;
-    if (area > 1500) return 1.5;
-    if (area > 500) return 2.5;
-    return DEFAULT_ZOOM;
+    if (area > 1500) return 1;
+    if (area > 500) return 1.5;
+    return 2;
   };
 
   const handleResetWorld = () => {
@@ -75,10 +79,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
 
   const confirmSelection = () => {
     if (!selected.country || !selected.city) return;
-    onConfirm?.({
-      countryName: selected.country,
-      city: selected.city,
-    });
+    setLocation({ city: selected.city, country: selected.country });
+    sendMessage(`Saved location to ${selected.city.name}`);
+    ref.current?.close();
+    handleResetWorld();
   };
 
   const handleCountryClick = async (
@@ -113,6 +117,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
 
   return (
     <div className="flex flex-col">
+      {ToastHolder}
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex flex-col">
           <div className="text-xs uppercase tracking-wider">
@@ -128,7 +133,11 @@ export const WorldMap: React.FC<WorldMapProps> = ({ onConfirm }) => {
 
       <div className="h-full w-full">
         <ComposableMap projection="geoMercator">
-          <ZoomableGroup center={mapControls?.center} zoom={mapControls?.zoom}>
+          <ZoomableGroup
+            center={mapControls?.center}
+            zoom={mapControls?.zoom}
+            scale={1}
+          >
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => {
