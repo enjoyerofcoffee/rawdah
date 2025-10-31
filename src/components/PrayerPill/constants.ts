@@ -1,8 +1,8 @@
 export const Prayers = {
   Fajr: "Fajr",
-  Dhur: "Dhur",
+  Dhur: "Dhuhr",
   Asr: "Asr",
-  Magrib: "Magrib",
+  Maghrib: "Maghrib",
   Isha: "Isha",
 } as const;
 

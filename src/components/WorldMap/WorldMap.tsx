@@ -133,11 +133,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
 
       <div className="h-full w-full">
         <ComposableMap projection="geoMercator">
-          <ZoomableGroup
-            center={mapControls?.center}
-            zoom={mapControls?.zoom}
-            scale={1}
-          >
+          <ZoomableGroup center={mapControls.center} zoom={mapControls.zoom}>
             <Geographies geography={geoUrl}>
               {({ geographies }) =>
                 geographies.map((geo) => {
@@ -219,6 +215,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                       fill="none"
                       stroke="currentColor"
                     >
+                      testererer
                       <circle cx="11" cy="11" r="8"></circle>
                       <path d="m21 21-4.3-4.3"></path>
                     </g>

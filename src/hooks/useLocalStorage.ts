@@ -10,9 +10,10 @@ export const useLocalStorage = () => {
   };
 
   const getLocation = (): LocationStorage | null => {
-    return (
-      (localStorage.get(LocalStorageKeys.Location) as LocationStorage) || null
-    );
+    const locationStorage = localStorage.getItem(LocalStorageKeys.Location);
+    return locationStorage
+      ? (JSON.parse(locationStorage) as LocationStorage)
+      : null;
   };
 
   return { setLocation, getLocation };

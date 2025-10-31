@@ -4,19 +4,23 @@ const PrayerIconsMap = {
   [Prayers.Fajr]: "🌄",
   [Prayers.Dhur]: "🌤️",
   [Prayers.Asr]: "⛅️",
-  [Prayers.Magrib]: "🌅",
+  [Prayers.Maghrib]: "🌅",
   [Prayers.Isha]: "🌙",
 };
 
 type PrayerPillProps = {
   type: PrayerType;
   time: string;
+  isLoading?: boolean;
 };
 
-export const PrayerPill: React.FC<PrayerPillProps> = ({ type, time }) => {
+export const PrayerPill: React.FC<PrayerPillProps> = ({
+  type,
+  time,
+  isLoading,
+}) => {
   return (
     <div className="p-3 sm:p-5 font-bold flex flex-col rounded-[1.5rem] bg-gray-700 text-center">
-      {/* Icon */}
       <div
         className="
           text-2xl
@@ -31,8 +35,10 @@ export const PrayerPill: React.FC<PrayerPillProps> = ({ type, time }) => {
         {PrayerIconsMap[type]}
       </div>
 
-      {/* Text */}
       <div className="flex flex-col items-center gap-1 pb-2">
+        {isLoading && (
+          <span className="loading loading-infinity loading-xl"></span>
+        )}
         <p
           className="
             text-sm
