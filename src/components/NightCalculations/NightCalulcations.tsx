@@ -3,6 +3,8 @@ import { parse, format, addMinutes } from "date-fns";
 import HalfMoon from "./assets/Half_Moon.png";
 import FullMoon from "./assets/Full.png";
 import FullCloud from "./assets/Full_Cloud.png";
+import Sunrise from "./assets/Sunrise.png";
+import Sunset from "./assets/Sunset.png";
 
 type NightCalculationsProps = {
   fajr?: string;
@@ -63,7 +65,7 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
     }, [fajr, maghrib]);
 
   const data = [
-    { label: "Maghrib (Night starts)", img: HalfMoon, time: fmt(maghribTime) },
+    { label: "Maghrib (Night starts)", img: Sunset, time: fmt(maghribTime) },
     { label: "1/3 of the night", img: HalfMoon, time: fmt(oneThird) },
     { label: "Midnight (Nisf al-layl)", img: FullMoon, time: fmt(midnight) },
     {
@@ -71,7 +73,7 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
       img: FullCloud,
       time: fmt(lastThirdStart),
     },
-    { label: "Fajr", img: HalfMoon, time: fmt(fajrTime) },
+    { label: "Fajr", img: Sunrise, time: fmt(fajrTime) },
   ];
 
   return (
