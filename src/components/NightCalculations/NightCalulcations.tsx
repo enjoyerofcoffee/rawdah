@@ -77,7 +77,7 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
   ];
 
   return (
-    <div className="bg-gray-700 rounded-2xl shadow-xl p-8 sm:h-62 h-full  w-full max-w-5xl mx-auto">
+    <div className="bg-gray-700 rounded-2xl shadow-xl p-8 sm:h-62 h-full  w-full max-w-5xl mx-auto mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end text-center">
         {data.map((item, index) => {
           const heights = [
