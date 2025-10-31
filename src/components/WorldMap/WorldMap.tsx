@@ -21,8 +21,8 @@ import { Virtuoso } from "react-virtuoso";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const DEFAULT_MAP_CENTER: [number, number] = [0, 100];
-const DEFAULT_ZOOM = 4;
+const DEFAULT_MAP_CENTER: [number, number] = [15, 20];
+const DEFAULT_ZOOM = 2;
 
 type Selection = {
   country?: string;
@@ -68,7 +68,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
     if (area > 4000) return 0.5;
     if (area > 1500) return 1;
     if (area > 500) return 1.5;
-    return 2;
+    return DEFAULT_ZOOM;
   };
 
   const handleResetWorld = () => {
@@ -114,6 +114,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
   const filteredCities = visibleCities.filter((c) =>
     c.name.toLowerCase().includes(search?.toLowerCase() || "")
   );
+
+  console.log(mapControls);
 
   return (
     <div className="flex flex-col">
@@ -256,27 +258,6 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                   </>
                 )}
               />
-
-              {/* <ul className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2 border-t border-slate-700">
-                {filteredCities.map((city) => (
-                  <li
-                    key={`${city.name}-${city.coords[0]}-${city.coords[1]}`}
-                    onMouseEnter={() => setHoverCity(city)}
-                    onMouseLeave={() => setHoverCity(undefined)}
-                  >
-                    <button
-                      className="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition text-slate-100"
-                      onClick={() => selectCity(city)}
-                    >
-                      <div className="text-sm font-medium">{city.name}</div>
-                      <div className="text-[11px] text-slate-400">
-                        lon {city.coords[0].toFixed(2)}, lat{" "}
-                        {city.coords[1].toFixed(2)}
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul> */}
             </>
           )}
 
