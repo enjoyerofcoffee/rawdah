@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import type { Location } from "./hooks/types";
 import type { PrayerTimesResponse } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { NightCalculations } from "./components/NightCalculations/NightCalulcations";
 
 const fetchPrayerTimes = async (location?: Location) => {
   if (!location) {
@@ -63,7 +64,7 @@ function App() {
   const openModal = () => dialogRef.current?.showModal();
 
   return (
-    <div className="h-full w-full flex flex-col sm:justify-center sm:items-center">
+    <div className="h-full w-full flex flex-col sm:justify-center sm:items-center p-4">
       <WorldMapDialog ref={dialogRef} />
       <div className="flex flex-col gap-4">
         <div className="grid sm:grid-cols-5 grid-cols-1 gap-4">
@@ -78,7 +79,7 @@ function App() {
         </div>
         <div className="flex items-center justify-between">
           <p>
-            <span className="font-bold">{location?.city.name}</span>,{" "}
+            <span className="font-bold">{location?.city.name}</span>{" "}
             {location?.country}
           </p>
           <button
@@ -88,7 +89,7 @@ function App() {
             Want to change your timezone?
           </button>
         </div>
-        <div className="bg-gray-700 h-12 rounded-2xl"></div>
+        <NightCalculations fajr={data?.Fajr} maghrib={data?.Maghrib} />
       </div>
     </div>
   );
