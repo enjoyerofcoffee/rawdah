@@ -9,18 +9,19 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { NightCalculations } from "./components/NightCalculations/NightCalulcations";
 import { SettingButton } from "./components/Settings/SettingButton";
 import { fetchPrayerTimes } from "./data/fetchPrayerTimes";
+import { DayPicker } from "react-day-picker";
 
 function App() {
   const worldMapDialogRef = useRef<HTMLDialogElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useState<Location>();
+  const [date, setDate] = useState<Date>(new Date());
   const [loadingLocation, setLoadingLocation] = useState(true); // to avoid flickering
   const { getLocation } = useLocalStorage();
 
-  const todayDate = new Date();
-
-  const { isLoading, data, refetch } = useQuery({
-    queryKey: ["prayertimes", location?.city, location?.country],
-    queryFn: () => fetchPrayerTimes(todayDate, location),
+  const { isLoading, data } = useQuery({
+    queryKey: ["prayertimes", date, location?.city, location?.country],
+    queryFn: () => fetchPrayerTimes(date, location),
   });
 
   useEffect(() => {
@@ -86,14 +87,60 @@ function App() {
       <SettingButton />
       <WorldMapDialog ref={worldMapDialogRef} />
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col font-bold text-xl">
-          <span>{format(todayDate, "d MMMM y")}</span>
-          {isLoading ? (
-            <span className="loading loading-infinity loading-xl"></span>
-          ) : (
-            <span>{hijriDate}</span>
-          )}
+        <div className="flex space-x-8">
+          <div className="flex flex-col font-bold text-xl">
+            <span>{format(date, "d MMMM y")}</span>
+            {isLoading ? (
+              <span className="loading loading-infinity loading-xl"></span>
+            ) : (
+              <span>{hijriDate}</span>
+            )}
+          </div>
+          <>
+            <button
+              popoverTarget="rdp-popover"
+              style={{ anchorName: "--rdp" } as React.CSSProperties}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M8 2v4M16 2v4" />
+                <rect x="3" y="4" width="18" height="18" rx="3" />
+                <path d="M3 9h18" />
+                <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01" />
+              </svg>
+            </button>
+            <div
+              popover="auto"
+              ref={popoverRef}
+              id="rdp-popover"
+              className="dropdown flex flex-col"
+              style={{ positionAnchor: "--rdp" } as React.CSSProperties}
+            >
+              <DayPicker
+                className="react-day-picker"
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => {
+                  if (newDate) {
+                    setDate(newDate);
+                    popoverRef.current?.hidePopover();
+                  }
+                }}
+              />
+            </div>
+          </>
         </div>
+
         <div className="grid sm:grid-cols-6 grid-cols-2 gap-4">
           {Object.values(Prayers).map((prayer) => (
             <PrayerPill
