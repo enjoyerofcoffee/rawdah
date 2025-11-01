@@ -22,9 +22,9 @@ export const SettingButton: React.FC = () => {
   };
 
   return (
-    <div className="absolute right-4 top-4">
+    <div>
       <button
-        className="btn btn-circle absolute right-4"
+        className="btn btn-circle"
         onClick={() => {
           dialogRef.current?.showModal();
         }}

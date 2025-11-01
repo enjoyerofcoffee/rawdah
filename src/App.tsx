@@ -7,9 +7,9 @@ import { format } from "date-fns";
 import type { Location } from "./hooks/types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { NightCalculations } from "./components/NightCalculations/NightCalulcations";
-import { SettingButton } from "./components/Settings/SettingButton";
 import { fetchPrayerTimes } from "./data/fetchPrayerTimes";
 import { DayPicker } from "react-day-picker";
+import { SettingButton } from "./components/Settings/SettingButton";
 
 function App() {
   const worldMapDialogRef = useRef<HTMLDialogElement>(null);
@@ -89,61 +89,53 @@ function App() {
 
   return (
     <div className="h-full w-full flex flex-col sm:justify-center sm:items-center p-4">
-      <SettingButton />
       <WorldMapDialog ref={worldMapDialogRef} />
       <div className="flex flex-col gap-6">
-        <div className="flex space-x-8">
-          <div className="flex flex-col font-bold text-xl">
-            <span>{format(date, "d MMMM y")}</span>
-            {isLoading ? (
-              <span className="loading loading-infinity loading-xl"></span>
-            ) : (
-              <span>{hijriDate}</span>
-            )}
-          </div>
-          <>
-            <button
-              popoverTarget="rdp-popover"
-              style={{ anchorName: "--rdp" } as React.CSSProperties}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M8 2v4M16 2v4" />
-                <rect x="3" y="4" width="18" height="18" rx="3" />
-                <path d="M3 9h18" />
-                <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01" />
-              </svg>
-            </button>
-            <div
-              popover="auto"
-              ref={popoverRef}
-              id="rdp-popover"
-              className="dropdown flex flex-col"
-              style={{ positionAnchor: "--rdp" } as React.CSSProperties}
-            >
-              <DayPicker
-                className="react-day-picker"
-                mode="single"
-                selected={date}
-                onSelect={(newDate) => {
-                  if (newDate) {
-                    setDate(newDate);
-                    popoverRef.current?.hidePopover();
-                  }
-                }}
-              />
+        <div className="flex items-center justify-between">
+          <div className="flex space-x-8 ">
+            <div className="flex flex-col font-bold text-xl">
+              <span>{format(date, "d MMMM y")}</span>
+              {isLoading ? (
+                <span className="loading loading-infinity loading-xl"></span>
+              ) : (
+                <div className="flex">
+                  <span>{hijriDate}</span>
+                  <button
+                    className="btn btn-link m-0 pb-2"
+                    popoverTarget="rdp-popover"
+                    style={{ anchorName: "--rdp" } as React.CSSProperties}
+                  >
+                    Change date
+                  </button>
+                  <div
+                    popover="auto"
+                    ref={popoverRef}
+                    id="rdp-popover"
+                    className="dropdown flex flex-col"
+                    style={
+                      {
+                        positionAnchor: "--rdp",
+                        transform: "translateX(-75%)",
+                      } as React.CSSProperties
+                    }
+                  >
+                    <DayPicker
+                      className="react-day-picker"
+                      mode="single"
+                      selected={date}
+                      onSelect={(newDate) => {
+                        if (newDate) {
+                          setDate(newDate);
+                          popoverRef.current?.hidePopover();
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          </>
+          </div>
+          <SettingButton />
         </div>
 
         <div className="grid sm:grid-cols-6 grid-cols-2 gap-4">
