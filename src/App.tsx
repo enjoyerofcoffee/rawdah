@@ -66,7 +66,7 @@ function App() {
     <div className="h-full w-full flex flex-col sm:justify-center sm:items-center p-4">
       <WorldMapDialog ref={dialogRef} />
       <div className="flex flex-col gap-4">
-        <div className="grid sm:grid-cols-5 grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-6 grid-cols-2 gap-4">
           {Object.values(Prayers).map((prayer) => (
             <PrayerPill
               key={prayer}
