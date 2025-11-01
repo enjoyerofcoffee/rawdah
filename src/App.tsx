@@ -111,13 +111,8 @@ function App() {
                     popover="auto"
                     ref={popoverRef}
                     id="rdp-popover"
-                    className="dropdown flex flex-col"
-                    style={
-                      {
-                        positionAnchor: "--rdp",
-                        transform: "translateX(-75%)",
-                      } as React.CSSProperties
-                    }
+                    className="dropdown flex flex-col -translate-x-1/2 sm:translate-x-0"
+                    style={{ positionAnchor: "--rdp" } as React.CSSProperties}
                   >
                     <DayPicker
                       className="react-day-picker"
