@@ -20,22 +20,35 @@ export const fetchPrayerTimes = async (date: Date, location?: Location) => {
     ? (JSON.parse(paramStorage) as Params)
     : DEFAULT_PARAMS;
 
-  console.log(params);
+  const nextDay = new Date(date);
+  nextDay.setDate(nextDay.getDate() + 1);
 
-  const formatTodayDate = format(date, "dd-MM-yyyy");
+  const formatDate = format(date, "dd-MM-yyyy");
+  const formatNextDay = format(nextDay, "dd-MM-yyyy");
 
-  const prayerTimes = await axios.get<PrayerTimesResponse>(
-    `https://api.aladhan.com/v1/timings/${formatTodayDate}`,
-    {
-      params: {
-        longitude: location.city.coords[0],
-        latitude: location.city.coords[1],
-        ...params,
-      },
-    }
+  const buildParams = {
+    longitude: location.city.coords[0],
+    latitude: location.city.coords[1],
+    ...params,
+  };
+
+  const prayerTimesPromise = axios.get<PrayerTimesResponse>(
+    `https://api.aladhan.com/v1/timings/${formatDate}`,
+    { params: buildParams }
   );
 
-  const response = prayerTimes.data.data;
+  const fajrNextDayPromise = axios.get<PrayerTimesResponse>(
+    `https://api.aladhan.com/v1/timings/${formatNextDay}`,
+    { params: buildParams }
+  );
 
-  return response;
+  const [prayerTimes, fajrNextDay] = await Promise.all([
+    prayerTimesPromise,
+    fajrNextDayPromise,
+  ]);
+
+  const response = prayerTimes.data.data;
+  const fajrNextDayResponse = fajrNextDay.data.data.timings.Fajr;
+
+  return { response, nextDayFajr: fajrNextDayResponse };
 };

@@ -20,7 +20,12 @@ function App() {
   const { getLocation } = useLocalStorage();
 
   const { isLoading, data } = useQuery({
-    queryKey: ["prayertimes", date, location?.city, location?.country],
+    queryKey: [
+      "prayertimes",
+      JSON.stringify(date),
+      location?.city,
+      location?.country,
+    ],
     queryFn: () => fetchPrayerTimes(date, location),
   });
 
@@ -43,7 +48,7 @@ function App() {
 
   const openModal = () => worldMapDialogRef.current?.showModal();
 
-  const hijriDate = `${data?.date.hijri.day} ${data?.date.hijri.month.en} ${data?.date.hijri.year}`;
+  const hijriDate = `${data?.response.date.hijri.day} ${data?.response.date.hijri.month.en} ${data?.response.date.hijri.year}`;
 
   // Stops flickering
   if (loadingLocation) {
@@ -146,7 +151,7 @@ function App() {
             <PrayerPill
               key={prayer}
               type={prayer}
-              time={data?.timings[prayer] || ""}
+              time={data?.response.timings[prayer] || ""}
               isLoading={isLoading}
             />
           ))}
@@ -166,8 +171,8 @@ function App() {
           </button>
         </div>
         <NightCalculations
-          fajr={data?.timings.Fajr}
-          maghrib={data?.timings.Maghrib}
+          fajr={data?.nextDayFajr}
+          maghrib={data?.response.timings.Maghrib}
         />
       </div>
     </div>
