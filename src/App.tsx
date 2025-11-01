@@ -33,8 +33,8 @@ function App() {
     const locationStorage = getLocation();
     if (locationStorage) {
       setLocation(locationStorage);
-      setLoadingLocation(false);
     }
+    setLoadingLocation(false);
 
     window.addEventListener("storage", () => {
       const location = getLocation();
