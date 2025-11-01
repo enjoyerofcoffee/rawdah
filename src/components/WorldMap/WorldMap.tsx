@@ -191,7 +191,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                     Reset
                   </button>
                 </div>
-                <label className="input flex items-center gap-2 mb-2">
+                <label className="input flex items-center gap-2 mb-2 w-full">
                   <svg
                     className="h-[1em] opacity-50"
                     xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +214,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
                     onChange={(v) => setSearch(v.currentTarget.value)}
                     value={search}
                     placeholder="Search"
-                    className="bg-transparent outline-none w-full text-sm text-slate-100 placeholder:text-slate-500"
+                    className="bg-transparent outline-none text-sm text-slate-100 placeholder:text-slate-500"
                   />
                 </label>
               </div>
