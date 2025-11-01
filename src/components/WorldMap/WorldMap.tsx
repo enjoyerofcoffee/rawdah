@@ -8,10 +8,8 @@ import {
 } from "react-simple-maps";
 import {
   geoCentroid,
-  geoPath,
   type ExtendedFeature,
   type GeoGeometryObjects,
-  type GeoPermissibleObjects,
 } from "d3-geo";
 import type { CitiesByCountry, CityRecord } from "./types";
 import { loadCityData } from "./utils";
@@ -22,7 +20,7 @@ import { Virtuoso } from "react-virtuoso";
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const DEFAULT_MAP_CENTER: [number, number] = [15, 20];
-const DEFAULT_ZOOM = 2;
+const DEFAULT_ZOOM = 1;
 
 type Selection = {
   country?: string;
@@ -62,15 +60,6 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
     })();
   }, []);
 
-  const getZoomForFeature = (feature: GeoPermissibleObjects) => {
-    const pathGen = geoPath();
-    const area = pathGen.area(feature);
-    if (area > 4000) return 0.5;
-    if (area > 1500) return 1;
-    if (area > 500) return 1.5;
-    return DEFAULT_ZOOM;
-  };
-
   const handleResetWorld = () => {
     setSelection({ city: undefined, country: undefined });
     setMapControls({ center: DEFAULT_MAP_CENTER, zoom: DEFAULT_ZOOM });
@@ -95,7 +84,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
     setSelection({ country: countryName, city: undefined });
     setMapControls({
       center: [lng, lat],
-      zoom: getZoomForFeature(geo),
+      zoom: DEFAULT_ZOOM,
     });
     setHoverCity(undefined);
     setSearch(undefined);
@@ -183,7 +172,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
           </ZoomableGroup>
         </ComposableMap>
 
-        <div className="flex flex-col max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm md:absolute md:top-24 md:right-4 md:w-64 md:bg-slate-900/90 md:border border-slate-700 md:shadow-xl">
+        <div className="flex flex-col cursor-pointer max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm md:absolute md:top-24 md:right-4 md:w-64 md:bg-slate-900/90 md:border border-slate-700 md:shadow-xl">
           {!selected.country && (
             <div className="text-slate-400 text-sm">
               Click a country to zoom in 🌍

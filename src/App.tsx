@@ -18,6 +18,7 @@ function App() {
   const [date, setDate] = useState<Date>(new Date());
   const [loadingLocation, setLoadingLocation] = useState(true); // to avoid flickering
   const { getLocation } = useLocalStorage();
+  const [dropdown, setDropdown] = useState(false);
 
   const { isLoading, data } = useQuery({
     queryKey: [
@@ -57,7 +58,7 @@ function App() {
 
   if (!location) {
     return (
-      <div className="hero bg-base-200 min-h-screen">
+      <div className="hero bg-base-200 min-h-screen p-6">
         <div className="hero-content flex-col flex-row-reverse max-w-4xl">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/0/0d/The_Green_Dome%2C_Masjid_Nabawi%2C_Madina.jpg"
@@ -103,29 +104,32 @@ function App() {
                   <button
                     className="btn btn-link m-0 pb-2"
                     popoverTarget="rdp-popover"
+                    onClick={() => setDropdown(!dropdown)}
                     style={{ anchorName: "--rdp" } as React.CSSProperties}
                   >
                     Change date
                   </button>
-                  <div
-                    popover="auto"
-                    ref={popoverRef}
-                    id="rdp-popover"
-                    className="dropdown flex flex-col -translate-x-1/2 sm:translate-x-0"
-                    style={{ positionAnchor: "--rdp" } as React.CSSProperties}
-                  >
-                    <DayPicker
-                      className="react-day-picker"
-                      mode="single"
-                      selected={date}
-                      onSelect={(newDate) => {
-                        if (newDate) {
-                          setDate(newDate);
-                          popoverRef.current?.hidePopover();
-                        }
-                      }}
-                    />
-                  </div>
+                  {dropdown && (
+                    <div
+                      popover="auto"
+                      ref={popoverRef}
+                      id="rdp-popover"
+                      className="dropdown flex flex-col -translate-x-1/2 sm:translate-x-0"
+                      style={{ positionAnchor: "--rdp" } as React.CSSProperties}
+                    >
+                      <DayPicker
+                        className="react-day-picker"
+                        mode="single"
+                        selected={date}
+                        onSelect={(newDate) => {
+                          if (newDate) {
+                            setDate(newDate);
+                            popoverRef.current?.hidePopover();
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
