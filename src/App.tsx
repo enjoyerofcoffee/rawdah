@@ -37,6 +37,7 @@ const fetchPrayerTimes = async (date: Date, location?: Location) => {
 function App() {
   const worldMapDialogRef = useRef<HTMLDialogElement>(null);
   const [location, setLocation] = useState<Location>();
+  const [loadingLocation, setLoadingLocation] = useState(true); // to avoid flickering
   const { getLocation } = useLocalStorage();
 
   const todayDate = new Date();
@@ -50,6 +51,7 @@ function App() {
     const locationStorage = getLocation();
     if (locationStorage) {
       setLocation(locationStorage);
+      setLoadingLocation(false);
     }
 
     window.addEventListener("storage", () => {
@@ -65,6 +67,11 @@ function App() {
   const openModal = () => worldMapDialogRef.current?.showModal();
 
   const hijriDate = `${data?.date.hijri.day} ${data?.date.hijri.month.en} ${data?.date.hijri.year}`;
+
+  // Stops flickering
+  if (loadingLocation) {
+    return <></>;
+  }
 
   if (!location) {
     return (
@@ -104,7 +111,11 @@ function App() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col font-bold text-xl">
           <span>{format(todayDate, "d MMM y")}</span>
-          {!!data && <span>{hijriDate}</span>}
+          {isLoading ? (
+            <span className="loading loading-infinity loading-xl"></span>
+          ) : (
+            <span>{hijriDate}</span>
+          )}
         </div>
         <div className="grid sm:grid-cols-6 grid-cols-2 gap-4">
           {Object.values(Prayers).map((prayer) => (
