@@ -7,7 +7,7 @@ type WorldMapDialogProps = {
 export const WorldMapDialog: React.FC<WorldMapDialogProps> = ({ ref }) => {
   return (
     <dialog ref={ref} className="modal">
-      <div className="modal-box w-screen h-screen max-w-none max-h-none p-0 overflow-hidden">
+      <div className="modal-box w-screen h-screen max-w-none max-h-none p-0">
         <WorldMap ref={ref} />
         <div className="absolute top-4 right-4 z-10">
           <button
