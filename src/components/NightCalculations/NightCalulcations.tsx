@@ -66,10 +66,16 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
 
   const data = [
     { label: "Maghrib (Night starts)", img: Sunset, time: fmt(maghribTime) },
-    { label: "1/3 of the night", img: HalfMoon, time: fmt(oneThird) },
+    {
+      label: "1/3 of the night ends",
+      helper: "2/3 of the night begins",
+      img: HalfMoon,
+      time: fmt(oneThird),
+    },
     { label: "Midnight (Nisf al-layl)", img: FullMoon, time: fmt(midnight) },
     {
-      label: "Last 1/3 begins (2/3)",
+      label: "Last 1/3 begins",
+      helper: "2/3 of the night ends",
       img: FullCloud,
       time: fmt(lastThirdStart),
     },
@@ -97,12 +103,57 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
                 alt={item.label}
                 className="w-16 h-16 object-contain mb-2"
               />
-              <p className="text-sm text-slate-300">{item.label}</p>
+              <div className="flex items-center">
+                <p className="text-sm text-slate-300">{item.label}</p>
+                <NightPeriodsHelper text={item.helper} />
+              </div>
               <p className="font-bold text-lg">{item.time}</p>
               <div className="sm:hidden divider"></div>
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+};
+
+type NightPeriodsHelperProps = {
+  text?: string;
+};
+const NightPeriodsHelper: React.FC<NightPeriodsHelperProps> = ({ text }) => {
+  if (!text) {
+    return <></>;
+  }
+
+  return (
+    <div className="dropdown dropdown-end">
+      <div
+        tabIndex={0}
+        role="button"
+        className="btn btn-circle btn-ghost btn-xs text-info"
+      >
+        <svg
+          tabIndex={0}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          className="h-4 w-4 stroke-current"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      <div
+        tabIndex={0}
+        className="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-42 shadow-sm"
+      >
+        <div tabIndex={0} className="card-body">
+          <p>{text}</p>
+        </div>
       </div>
     </div>
   );
