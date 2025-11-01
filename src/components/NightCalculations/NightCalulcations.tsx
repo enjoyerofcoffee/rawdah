@@ -73,7 +73,7 @@ export const NightCalculations: React.FC<NightCalculationsProps> = ({
       img: FullCloud,
       time: fmt(lastThirdStart),
     },
-    { label: "Fajr", img: Sunrise, time: fmt(fajrTime) },
+    { label: "Fajr (next day)", img: Sunrise, time: fmt(fajrTime) },
   ];
 
   return (
