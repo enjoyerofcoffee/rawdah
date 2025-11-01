@@ -105,7 +105,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       {ToastHolder}
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex flex-col">
@@ -120,174 +120,172 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
         </div>
       </div>
 
-      <div className="h-full w-full">
-        <ComposableMap projection="geoMercator">
-          <ZoomableGroup center={mapControls.center} zoom={mapControls.zoom}>
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => {
-                  const name = geo.properties?.name;
-                  const isSelected = !!name && name === selected.country;
+      <ComposableMap projection="geoMercator">
+        <ZoomableGroup center={mapControls.center} zoom={mapControls.zoom}>
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => {
+                const name = geo.properties?.name;
+                const isSelected = !!name && name === selected.country;
 
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={() => handleCountryClick(geo)}
-                      style={{
-                        default: {
-                          fill: isSelected ? "#475569" : "#1e293b",
-                          outline: "none",
-                          stroke: isSelected ? "#38bdf8" : "#334155",
-                          strokeWidth: isSelected ? 1 : 0.4,
-                          cursor: "pointer",
-                        },
-                        hover: {
-                          fill: isSelected ? "#475569" : "#334155",
-                          outline: "none",
-                          cursor: "pointer",
-                        },
-                        pressed: {
-                          fill: "#475569",
-                          outline: "none",
-                        },
-                      }}
-                    />
-                  );
-                })
-              }
-            </Geographies>
-
-            {hoverCity && (
-              <Marker coordinates={hoverCity.coords}>
-                <circle r={0.5} fill={"#FF875B"} strokeWidth={1} />
-              </Marker>
-            )}
-
-            {selected.city && (
-              <Marker coordinates={selected.city.coords}>
-                <circle r={0.5} fill="#FF875B" />
-              </Marker>
-            )}
-          </ZoomableGroup>
-        </ComposableMap>
-
-        <div className="flex flex-col cursor-pointer max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm md:absolute md:top-24 md:right-4 md:w-64 md:bg-slate-900/90 md:border border-slate-700 md:shadow-xl">
-          {!selected.country && (
-            <div className="text-slate-400 text-sm">
-              Click a country to zoom in 🌍
-            </div>
-          )}
-
-          {selected.country && !selected.city && (
-            <>
-              <div className="flex-shrink-0 relative z-10">
-                <div className="flex items-center text-[10px] justify-between text-slate-400 uppercase tracking-wider mb-2">
-                  Cities in {selected.country}
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={handleResetWorld}
-                  >
-                    Reset
-                  </button>
-                </div>
-                <label className="input flex items-center gap-2 mb-2 w-full">
-                  <svg
-                    className="h-[1em] opacity-50"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                  >
-                    <g
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                      strokeWidth="2.5"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      testererer
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <path d="m21 21-4.3-4.3"></path>
-                    </g>
-                  </svg>
-                  <input
-                    type="search"
-                    onChange={(v) => setSearch(v.currentTarget.value)}
-                    value={search}
-                    placeholder="Search"
-                    className="bg-transparent outline-none text-sm text-slate-100 placeholder:text-slate-500"
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    onClick={() => handleCountryClick(geo)}
+                    style={{
+                      default: {
+                        fill: isSelected ? "#475569" : "#1e293b",
+                        outline: "none",
+                        stroke: isSelected ? "#38bdf8" : "#334155",
+                        strokeWidth: isSelected ? 1 : 0.4,
+                        cursor: "pointer",
+                      },
+                      hover: {
+                        fill: isSelected ? "#475569" : "#334155",
+                        outline: "none",
+                        cursor: "pointer",
+                      },
+                      pressed: {
+                        fill: "#475569",
+                        outline: "none",
+                      },
+                    }}
                   />
-                </label>
-              </div>
+                );
+              })
+            }
+          </Geographies>
 
-              {filteredCities.length === 0 && (
-                <div className="text-slate-500 text-xs my-4">
-                  No cities found.
-                </div>
-              )}
-
-              <Virtuoso
-                style={{ height: 420 }}
-                data={filteredCities}
-                totalCount={filteredCities.length}
-                itemContent={(_, city) => (
-                  <>
-                    <div
-                      className="w-full text-left p-2 rounded-lg hover:bg-slate-700 transition text-slate-100 mt-2"
-                      onClick={() => selectCity(city)}
-                    >
-                      <div className="text-sm font-medium">{city.name}</div>
-                      <div className="text-sm text-slate-400">
-                        lon {city.coords[0].toFixed(2)}, lat{" "}
-                        {city.coords[1].toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="divider m-0 p-0" />
-                  </>
-                )}
-              />
-            </>
+          {hoverCity && (
+            <Marker coordinates={hoverCity.coords}>
+              <circle r={0.5} fill={"#FF875B"} strokeWidth={1} />
+            </Marker>
           )}
 
-          {selected.country && selected.city && (
-            <div className="flex flex-col flex-1">
-              <div className="text-xs uppercase tracking-wider mb-2">
-                Selected city
-              </div>
+          {selected.city && (
+            <Marker coordinates={selected.city.coords}>
+              <circle r={0.5} fill="#FF875B" />
+            </Marker>
+          )}
+        </ZoomableGroup>
+      </ComposableMap>
 
-              <div className="text-lg font-semibold text-slate-100">
-                {selected.city.name}
-              </div>
+      <div className="flex flex-col cursor-pointer max-h-[60vh] backdrop-blur rounded-xl p-4 text-sm md:absolute md:top-24 md:right-4 md:w-64 md:bg-slate-900/90 md:border border-slate-700 md:shadow-xl">
+        {!selected.country && (
+          <div className="text-slate-400 text-sm">
+            Click a country to zoom in 🌍
+          </div>
+        )}
 
-              <div className="text-xs mb-4">{selected.country}</div>
-
-              <div className="text-xs leading-relaxed mb-4">
-                Lon/Lat:{" "}
-                <span>
-                  {selected.city.coords[0].toFixed(2)},{" "}
-                  {selected.city.coords[1].toFixed(2)}
-                </span>
-              </div>
-
-              <div className="space-y-2">
+        {selected.country && !selected.city && (
+          <>
+            <div className="flex-shrink-0 relative z-10">
+              <div className="flex items-center text-[10px] justify-between text-slate-400 uppercase tracking-wider mb-2">
+                Cities in {selected.country}
                 <button
-                  className="btn btn-primary btn-sm w-full"
-                  onClick={confirmSelection}
+                  className="btn btn-ghost btn-sm"
+                  onClick={handleResetWorld}
                 >
-                  Use {selected.city.name}
-                </button>
-
-                <button
-                  className="btn btn-ghost btn-sm w-full"
-                  onClick={() =>
-                    setSelection((prev) => ({ ...prev, city: undefined }))
-                  }
-                >
-                  Pick different city
+                  Reset
                 </button>
               </div>
+              <label className="input flex items-center gap-2 mb-2 w-full">
+                <svg
+                  className="h-[1em] opacity-50"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <g
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    testererer
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </g>
+                </svg>
+                <input
+                  type="search"
+                  onChange={(v) => setSearch(v.currentTarget.value)}
+                  value={search}
+                  placeholder="Search"
+                  className="bg-transparent outline-none text-sm text-slate-100 placeholder:text-slate-500"
+                />
+              </label>
             </div>
-          )}
-        </div>
+
+            {filteredCities.length === 0 && (
+              <div className="text-slate-500 text-xs my-4">
+                No cities found.
+              </div>
+            )}
+
+            <Virtuoso
+              style={{ height: 420 }}
+              data={filteredCities}
+              totalCount={filteredCities.length}
+              itemContent={(_, city) => (
+                <>
+                  <div
+                    className="w-full text-left p-2 rounded-lg hover:bg-slate-700 transition text-slate-100 mt-2"
+                    onClick={() => selectCity(city)}
+                  >
+                    <div className="text-sm font-medium">{city.name}</div>
+                    <div className="text-sm text-slate-400">
+                      lon {city.coords[0].toFixed(2)}, lat{" "}
+                      {city.coords[1].toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="divider m-0 p-0" />
+                </>
+              )}
+            />
+          </>
+        )}
+
+        {selected.country && selected.city && (
+          <div className="flex flex-col flex-1">
+            <div className="text-xs uppercase tracking-wider mb-2">
+              Selected city
+            </div>
+
+            <div className="text-lg font-semibold text-slate-100">
+              {selected.city.name}
+            </div>
+
+            <div className="text-xs mb-4">{selected.country}</div>
+
+            <div className="text-xs leading-relaxed mb-4">
+              Lon/Lat:{" "}
+              <span>
+                {selected.city.coords[0].toFixed(2)},{" "}
+                {selected.city.coords[1].toFixed(2)}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <button
+                className="btn btn-primary btn-sm w-full"
+                onClick={confirmSelection}
+              >
+                Use {selected.city.name}
+              </button>
+
+              <button
+                className="btn btn-ghost btn-sm w-full"
+                onClick={() =>
+                  setSelection((prev) => ({ ...prev, city: undefined }))
+                }
+              >
+                Pick different city
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
