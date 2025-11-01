@@ -155,7 +155,7 @@ function App() {
             </p>
           )}
           <button
-            className="btn btn-link self-end 2xl:text-2xl justify-self-end"
+            className="btn btn-link self-end justify-self-end"
             onClick={openModal}
           >
             {location ? "Want to change your location?" : "Select location"}
