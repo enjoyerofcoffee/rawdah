@@ -94,3 +94,10 @@ export interface PrayerTimesResponse {
     };
   };
 }
+
+export type Params = {
+  method: number; // Prayer Calculation
+  school: number; // Madhab (eariler or later asr)
+  latitudeAdjustmentMethod: number; // High lattitude adjustments
+};
+export type ParamKey = keyof Params; // "method" | "school" | "latitudeAdjustmentMethod"

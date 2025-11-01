@@ -1,22 +1,38 @@
-import { useRef, type ReactNode } from "react";
-import { latitudeAdjustmentMethods, madhab, prayerMethods } from "./inputData";
+import { useRef, type FormEvent, type ReactNode } from "react";
+import { latitudeAdjustmentMethod, school, prayerMethods } from "./inputData";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
+import type { ParamKey, Params } from "../../data/data.types";
+import { DEFAULT_PARAMS } from "../../data/fetchPrayerTimes";
 
 export const SettingButton: React.FC = () => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const { setParams, getParams } = useLocalStorage();
+
+  const defaultParams = getParams() || DEFAULT_PARAMS;
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const newParams = {} as Params;
+    const data = new FormData(event.currentTarget);
+
+    for (const [name, value] of data) {
+      newParams[name as ParamKey] = parseInt(value.toString());
+    }
+
+    setParams(newParams);
+  };
 
   return (
     <div className="absolute right-4 top-4">
       <button
         className="btn btn-circle absolute right-4"
         onClick={() => {
-          console.log("here!");
           dialogRef.current?.showModal();
         }}
       >
         {ButtonSvg}
       </button>
       <dialog className="modal py-2" ref={dialogRef}>
-        <div className="modal-box h-full">
+        <div className="modal-box ">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
               ✕
@@ -24,7 +40,7 @@ export const SettingButton: React.FC = () => {
           </form>
           <h3 className="font-bold text-lg">Settings</h3>
           <div className="divider" />
-          <form className="flex flex-col space-y-8">
+          <form className="flex flex-col space-y-8" onSubmit={onSubmit}>
             <FormItem
               label="Prayer Time Calculation"
               helper={
@@ -37,16 +53,26 @@ export const SettingButton: React.FC = () => {
                 </div>
               }
             >
-              <select className="select w-full">
-                {prayerMethods.map((m) => (
-                  <option>{m}</option>
+              <select
+                defaultValue={defaultParams.method}
+                name="method"
+                className="select w-full"
+              >
+                {prayerMethods.map((m, idx) => (
+                  // Minus one to match with params
+                  // Params also includes custom method which is not supported
+                  <option value={idx + 1}>{m}</option>
                 ))}
               </select>
             </FormItem>
             <FormItem label="Madhab / Asr Time">
-              <select className="select w-full">
-                {madhab.map((m) => (
-                  <option>{m}</option>
+              <select
+                defaultValue={defaultParams.school}
+                name="school"
+                className="select w-full"
+              >
+                {school.map((m, idx) => (
+                  <option value={idx}>{m}</option>
                 ))}
               </select>
             </FormItem>
@@ -56,13 +82,21 @@ export const SettingButton: React.FC = () => {
                 "Method for adjusting times at higher latitudes. For example, if you are checking timings in the UK or Sweden."
               }
             >
-              <select className="select w-full">
-                {latitudeAdjustmentMethods.map((m) => (
-                  <option>{m}</option>
+              <select
+                defaultValue={defaultParams.latitudeAdjustmentMethod}
+                name="latitudeAdjustmentMethod"
+                className="select w-full"
+              >
+                {latitudeAdjustmentMethod.map((m, idx) => (
+                  // Add 1 to map idx to params
+                  <option value={idx + 1}>{m}</option>
                 ))}
               </select>
             </FormItem>
-            <button className="btn btn-primary btn-sm w-24 self-end">
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm w-24 self-end"
+            >
               Done
             </button>
           </form>
@@ -77,11 +111,11 @@ type FormItemProps = {
   children: ReactNode;
   helper?: string | ReactNode;
 };
-const FormItem: React.FC<FormItemProps> = ({ helper, children }) => {
+const FormItem: React.FC<FormItemProps> = ({ label, helper, children }) => {
   return (
     <div className="flex w-full items-center">
       <label className="flex-1 floating-label">
-        <span className="label">Prayer Time Calculation</span>
+        <span className="label">{label}</span>
         {children}
       </label>
       {helper && <HelperDropdown text={helper} />}

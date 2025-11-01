@@ -24,12 +24,12 @@ export const prayerMethods = [
   "Ministry of Awqaf, Islamic Affairs and Holy Places, Jordan",
 ];
 
-export const madhab = [
+export const school = [
   "Eariler Asr Time (Maliki, Shafi'i & Hanbali)",
   "Laster Asr Time (Hanafi)",
 ];
 
-export const latitudeAdjustmentMethods = [
+export const latitudeAdjustmentMethod = [
   "Middle of the Night",
   "One Seventh",
   "Angle Based",

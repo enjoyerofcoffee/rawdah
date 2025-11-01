@@ -3,39 +3,12 @@ import { Prayers } from "./components/PrayerPill/constants";
 import { PrayerPill } from "./components/PrayerPill/PrayerPill";
 import { WorldMapDialog } from "./components/WorldMap/WorldMapDialog";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { format } from "date-fns";
 import type { Location } from "./hooks/types";
-import type { PrayerTimesResponse } from "./data.types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { NightCalculations } from "./components/NightCalculations/NightCalulcations";
 import { SettingButton } from "./components/Settings/SettingButton";
-
-const fetchPrayerTimes = async (date: Date, location?: Location) => {
-  if (!location) {
-    return null;
-  }
-
-  const localStoragea = localStorage.getItem("params");
-
-  const formatTodayDate = format(date, "dd-MM-yyyy");
-
-  const prayerTimes = await axios.get<PrayerTimesResponse>(
-    `https://api.aladhan.com/v1/timings/${formatTodayDate}`,
-    {
-      params: {
-        longitude: location.city.coords[0],
-        latitude: location.city.coords[1],
-        method: 15,
-        latitudeAdjustmentMethod: 1,
-      },
-    }
-  );
-
-  const response = prayerTimes.data.data;
-
-  return response;
-};
+import { fetchPrayerTimes } from "./data/fetchPrayerTimes";
 
 function App() {
   const worldMapDialogRef = useRef<HTMLDialogElement>(null);
@@ -134,7 +107,7 @@ function App() {
         <div className="flex items-center justify-between">
           {location && (
             <p>
-              <span className="font-bold">{location?.city.name}, </span>
+              <span className="font-bold">{location?.city?.name}, </span>
               {location?.country}
             </p>
           )}
