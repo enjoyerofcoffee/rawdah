@@ -6,14 +6,17 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import type { Location } from "./hooks/types";
-import type { PrayerTimesResponse } from "./types";
+import type { PrayerTimesResponse } from "./data.types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { NightCalculations } from "./components/NightCalculations/NightCalulcations";
+import { SettingButton } from "./components/Settings/SettingButton";
 
 const fetchPrayerTimes = async (date: Date, location?: Location) => {
   if (!location) {
     return null;
   }
+
+  const localStoragea = localStorage.getItem("params");
 
   const formatTodayDate = format(date, "dd-MM-yyyy");
 
@@ -42,7 +45,7 @@ function App() {
 
   const todayDate = new Date();
 
-  const { isLoading, data } = useQuery({
+  const { isLoading, data, refetch } = useQuery({
     queryKey: ["prayertimes", location?.city, location?.country],
     queryFn: () => fetchPrayerTimes(todayDate, location),
   });
@@ -107,10 +110,11 @@ function App() {
 
   return (
     <div className="h-full w-full flex flex-col sm:justify-center sm:items-center p-4">
+      <SettingButton />
       <WorldMapDialog ref={worldMapDialogRef} />
       <div className="flex flex-col gap-6">
         <div className="flex flex-col font-bold text-xl">
-          <span>{format(todayDate, "d MMM y")}</span>
+          <span>{format(todayDate, "d MMMM y")}</span>
           {isLoading ? (
             <span className="loading loading-infinity loading-xl"></span>
           ) : (
@@ -138,7 +142,7 @@ function App() {
             className="btn btn-link self-end 2xl:text-2xl justify-self-end"
             onClick={openModal}
           >
-            {location ? "Want to change your timezone?" : "Select location"}
+            {location ? "Want to change your location?" : "Select location"}
           </button>
         </div>
         <NightCalculations

@@ -115,8 +115,6 @@ export const WorldMap: React.FC<WorldMapProps> = ({ ref }) => {
     c.name.toLowerCase().includes(search?.toLowerCase() || "")
   );
 
-  console.log(mapControls);
-
   return (
     <div className="flex flex-col">
       {ToastHolder}
