@@ -8,6 +8,7 @@ export const DEFAULT_PARAMS = {
   method: 15,
   school: 0,
   latitudeAdjustmentMethod: 1,
+  tune: "0,0,0,5,-2,4,4,1,0", // Comma Separated String of integers to offset timings returned by the API in minutes.
 };
 
 export const fetchPrayerTimes = async (date: Date, location?: Location) => {
@@ -17,7 +18,7 @@ export const fetchPrayerTimes = async (date: Date, location?: Location) => {
 
   const paramStorage = localStorage.getItem(LocalStorageKeys.Params);
   const params = paramStorage
-    ? (JSON.parse(paramStorage) as Params)
+    ? { ...DEFAULT_PARAMS, ...(JSON.parse(paramStorage) as Params) }
     : DEFAULT_PARAMS;
 
   const nextDay = new Date(date);
