@@ -44,13 +44,13 @@ export const SettingButton: React.FC = () => {
             <FormItem
               label="Prayer Time Calculation"
               helper={
-                <div>
+                <>
                   A prayer times calculation methods as various schools of
                   thought about how to compute the timings.{" "}
                   <span className="font-bold">
                     Default is Moonsighting Committee Worldwide
                   </span>
-                </div>
+                </>
               }
             >
               <select
@@ -58,10 +58,10 @@ export const SettingButton: React.FC = () => {
                 name="method"
                 className="select w-full"
               >
-                {prayerMethods.map((m, idx) => (
-                  // Minus one to match with params
-                  // Params also includes custom method which is not supported
-                  <option value={idx + 1}>{m}</option>
+                {prayerMethods.map(({ label, value }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </FormItem>
@@ -71,8 +71,10 @@ export const SettingButton: React.FC = () => {
                 name="school"
                 className="select w-full"
               >
-                {school.map((m, idx) => (
-                  <option value={idx}>{m}</option>
+                {school.map(({ label, value }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </FormItem>
@@ -87,9 +89,10 @@ export const SettingButton: React.FC = () => {
                 name="latitudeAdjustmentMethod"
                 className="select w-full"
               >
-                {latitudeAdjustmentMethod.map((m, idx) => (
-                  // Add 1 to map idx to params
-                  <option value={idx + 1}>{m}</option>
+                {latitudeAdjustmentMethod.map(({ label, value }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </FormItem>
@@ -167,9 +170,9 @@ const ButtonSvg = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <circle cx="12" cy="12" r="3" />
     <path
