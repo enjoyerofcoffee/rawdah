@@ -20,7 +20,7 @@ import { Virtuoso } from "react-virtuoso";
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const DEFAULT_MAP_CENTER: [number, number] = [15, 20];
-const DEFAULT_ZOOM = 1;
+const DEFAULT_ZOOM = 4;
 
 type Selection = {
   country?: string;
